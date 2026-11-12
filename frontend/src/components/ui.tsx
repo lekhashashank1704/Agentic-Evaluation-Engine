@@ -51,6 +51,8 @@ const TONE: Record<string, string> = {
   ESCALATED: "bad", BUDGET_EXCEEDED: "bad", MAX_ITERATIONS_REACHED: "bad", STAGNATION_DETECTED: "bad",
   CRITICAL: "crit", SEV1: "crit", SEV2: "bad", ERROR: "bad", INVALIDATED: "neutral", SKIPPED: "neutral",
   INFO: "neutral", CREATED: "neutral", DENIED: "bad", ALLOWED: "ok", PREPARED: "info",
+  DONE: "ok", ACTIVE: "ok", RUNNING: "info", PAUSED: "warn", CANDIDATE: "info", PROMOTION_PENDING: "warn",
+  RETIRED: "neutral", REGRADE: "primary", RUN: "neutral",
 };
 
 export function Badge({ v, tone }: { v?: string | null; tone?: string }) {

@@ -26,6 +26,7 @@ AGENT_FORBIDDEN_ACTIONS = {
     "approve_policy_change",
     "bypass_evaluation",
     "complete_postmortem",
+    "promote_agent",
 }
 
 SEED_USERS = [
@@ -36,13 +37,13 @@ SEED_USERS = [
      "permissions": ["approve", "reject", "request_changes", "comment", "run_execution"]},
     {"id": "user-priya", "name": "Priya Shah", "role": "tech_lead", "kind": "human",
      "permissions": ["approve", "reject", "request_changes", "comment", "trigger_release", "run_execution",
-                     "create_ticket"]},
+                     "create_ticket", "promote_agent"]},
     {"id": "user-sam", "name": "Sam Okafor", "role": "security_lead", "kind": "human",
      "permissions": ["approve", "reject", "request_changes", "comment"]},
     {"id": "user-jordan", "name": "Jordan Lee", "role": "sre_oncall", "kind": "human",
      "permissions": ["manage_incident", "complete_postmortem", "comment", "authorize_rollback"]},
     {"id": "user-morgan", "name": "Morgan Chen", "role": "governance_admin", "kind": "human",
-     "permissions": ["approve_policy_change", "modify_policy", "comment", "analyze_feedback"]},
+     "permissions": ["approve_policy_change", "modify_policy", "comment", "analyze_feedback", "promote_agent"]},
     # agents
     {"id": "agent-coding", "name": "Coding / Fix Agent", "role": "coding_agent", "kind": "agent",
      "permissions": ["generate_artifact", "revise_artifact", "open_pull_request"]},

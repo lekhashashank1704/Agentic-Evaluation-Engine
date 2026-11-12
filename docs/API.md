@@ -32,3 +32,4 @@ Interactive OpenAPI docs are served at `http://localhost:8000/docs`. Send the ac
 | GET | `/api/audit`, `/api/audit/verify` | Audit entries and hash-chain verification |
 | GET | `/api/notifications` | Simulated pages and emails |
 | GET/POST | `/api/demo/scenarios`, `/api/demo/{name}` | Reproducible end-to-end scenarios |
+| GET/POST | `/api/harness/...`, `/api/gateway/...` | Eval harness and model gateway: see [EVAL_HARNESS.md](EVAL_HARNESS.md#api) |

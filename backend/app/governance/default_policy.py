@@ -173,6 +173,19 @@ DEFAULT_POLICY: dict = {
             "api_change": "risk.factors.code_change_impact.api_change",
         },
     },
+    "gateway": {
+        "replay_enabled": True,
+        "prices_per_1k_tokens_usd": {
+            "simulated-deterministic-v1": {"input": 0.003, "output": 0.015},
+            "simulated-judge-v1": {"input": 0.001, "output": 0.005},
+        },
+    },
+    "harness": {
+        "default_budget_usd": 1.0,
+        "max_retries": 2,
+        "promotion_max_case_regressions": 0,
+        "promotion_approval_roles": ["tech_lead", "governance_admin"],
+    },
     "rbac": {
         "approval_roles": ["reviewer", "tech_lead", "security_lead"],
         "incident_roles": ["sre_oncall"],

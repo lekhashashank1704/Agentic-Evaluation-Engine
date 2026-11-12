@@ -83,12 +83,15 @@ def build_feedback(reports: list[EvaluatorReport]) -> list[FeedbackItem]:
 
 
 class EvaluationEngine:
-    def __init__(self, db: Session, policy: dict[str, Any]):
+    def __init__(self, db: Session, policy: dict[str, Any], persist: bool = True):
         self.db = db
         self.tm = ThresholdManager(policy)
+        self.persist = persist  # eval-harness runs keep their own result store
 
     # ------------------------------------------------------------------ helpers
     def _persist(self, result: EvaluationResult) -> EvaluationResult:
+        if not self.persist:
+            return result
         self.db.add(Evaluation(
             id=result.evaluation_id, execution_id=result.execution_id, artifact_version=result.artifact_version,
             artifact_hash=result.artifact_hash, evaluation_type=result.evaluation_type,
@@ -98,7 +101,7 @@ class EvaluationEngine:
         return result
 
     def _base(self, ctx: dict[str, Any], stage: str, etype: str) -> dict[str, Any]:
-        return {"evaluation_id": next_id(self.db, "EVAL"), "project_id": ctx["project_id"],
+        return {"evaluation_id": next_id(self.db, "EVAL" if self.persist else "HEVAL"), "project_id": ctx["project_id"],
                 "ticket_id": ctx["ticket_id"], "artifact_id": ctx["artifact_id"],
                 "artifact_version": ctx["artifact_version"], "artifact_hash": ctx["artifact_hash"],
                 "lifecycle_stage": stage, "evaluation_type": etype, "policy_version": self.tm.version,

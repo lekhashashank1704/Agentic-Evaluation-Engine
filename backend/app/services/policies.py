@@ -19,7 +19,10 @@ def active_policy(db: Session) -> dict[str, Any]:
                            created_by="system-governance", change_summary="Initial policy")
         db.add(pv)
         db.flush()
-    return copy.deepcopy(pv.policy)
+    policy = copy.deepcopy(pv.policy)
+    for key, value in DEFAULT_POLICY.items():  # sections added after this version was stored
+        policy.setdefault(key, copy.deepcopy(value))
+    return policy
 
 
 def get_path(policy: dict[str, Any], path: str) -> Any:

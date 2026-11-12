@@ -126,6 +126,10 @@ class SimulatedCodingAgent(CodingAgentAdapter):
     agent_id = "agent-coding"
     model = "simulated-deterministic-v1"
 
+    def __init__(self, version: str = "coding-agent@1.0", config: dict[str, Any] | None = None):
+        self.version = version
+        self.config = config or {"fixes_per_iteration": 2}
+
     def _initial_defects(self, sim: dict[str, Any]) -> set[str]:
         defects = set(PROFILE_DEFECTS.get(sim.get("defect_profile", "realistic"), PROFILE_DEFECTS["realistic"]))
         if sim.get("scenario") == "critical_auth_payment" and sim.get("defect_profile") != "clean":
@@ -143,6 +147,7 @@ class SimulatedCodingAgent(CodingAgentAdapter):
             "prompt_tokens": _tokens(prompt),
             "completion_tokens": _tokens(output_text),
             "simulated": True,
+            "agent_version": self.version,
         }
         usage["total_tokens"] = usage["prompt_tokens"] + usage["completion_tokens"]
         number = re.sub(r"\D", "", ticket.get("ticket_id", "")) or "1"
@@ -154,6 +159,7 @@ class SimulatedCodingAgent(CodingAgentAdapter):
             "description": ticket.get("description", ""),
             "impacted_files": sorted(files),
             "agent_actions": actions,
+            "agent_version": self.version,
             "simulated": True,
         }
         manifest = {"claimed_by_agent": True, "files": sorted(files), "scenario": scenario}
@@ -189,7 +195,8 @@ class SimulatedCodingAgent(CodingAgentAdapter):
     def revise(self, ticket, previous: ArtifactDraft, feedback: list[FeedbackItem], iteration: int) -> ArtifactDraft:
         sim = ticket.get("simulation", {})
         profile = sim.get("defect_profile", "realistic")
-        capacity = int(sim.get("fixes_per_iteration", 3))
+        capacity = sim.get("fixes_per_iteration")
+        capacity = int(capacity if capacity is not None else self.config.get("fixes_per_iteration", 2))
         defects = set(previous.agent_state.get("defects", []))
         notes = list(previous.agent_state.get("review_notes", []))
         mapped = self.map_feedback(feedback)

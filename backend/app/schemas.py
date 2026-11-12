@@ -66,7 +66,7 @@ class SimulationControls(BaseModel):
         "realistic",
         description="realistic | clean | critical_secret | stagnation | regression | protected_path",
     )
-    fixes_per_iteration: int = 2
+    fixes_per_iteration: int | None = Field(None, description="None = use the active agent version's config")
     seed: int = 42
     budget_usd_override: float | None = None
     max_iterations_override: int | None = None

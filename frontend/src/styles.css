@@ -112,6 +112,8 @@ input, select, textarea { font: inherit; border: 1px solid var(--border); border
 textarea { min-height: 80px; resize: vertical; }
 label.field { display: block; font-size: 12px; color: var(--muted); font-weight: 600; }
 label.field > * { margin-top: 4px; }
+label.field > input, label.field > select { display: block; }
+.tabs .count { margin-left: 6px; background: #f59e0b; color: #1f2937; border-radius: 999px; font-size: 11px; padding: 0 7px; font-weight: 700; }
 
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; overflow-x: auto; }
 .tabs button { background: none; border: none; padding: 9px 14px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
