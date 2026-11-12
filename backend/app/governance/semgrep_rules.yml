@@ -1,0 +1,28 @@
+# Semgrep equivalents of the built-in governance security rules.
+# Used automatically when the `semgrep` CLI is installed (pip install semgrep).
+rules:
+  - id: gov-hardcoded-live-key
+    languages: [python]
+    severity: ERROR
+    message: Hardcoded live credential
+    pattern-regex: sk_live_[0-9A-Za-z]{16,}
+    metadata: {governance_rule: SEC-SECRET-001, governance_severity: CRITICAL, category: credentials}
+  - id: gov-sql-string-concat
+    languages: [python]
+    severity: ERROR
+    message: SQL query built from untrusted input
+    patterns:
+      - pattern-either:
+          - pattern: $CONN.execute("..." + $X + ...)
+          - pattern: $CONN.execute(f"...")
+          - pattern: |
+              $Q = "..." + $X + ...
+              ...
+              $CONN.execute($Q)
+    metadata: {governance_rule: SEC-SQLI-001, governance_severity: HIGH, category: injection}
+  - id: gov-sensitive-logging
+    languages: [python]
+    severity: WARNING
+    message: Sensitive value written to logs
+    pattern-regex: (print|logger\.\w+)\(.*(token|password|authorization)
+    metadata: {governance_rule: SEC-PII-001, governance_severity: MEDIUM, category: data_exposure}
