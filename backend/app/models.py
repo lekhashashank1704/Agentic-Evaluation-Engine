@@ -202,3 +202,125 @@ class Notification(Base):
     entity_type: Mapped[str] = mapped_column(String(32))
     entity_id: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+# ---------------------------------------------------------------------------- eval harness & model gateway
+class ModelCall(Base):
+    """Every model call from production agents *and* eval runs, metered by the shared gateway."""
+
+    __tablename__ = "model_calls"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    caller: Mapped[str] = mapped_column(String(16))  # production | eval
+    agent: Mapped[str] = mapped_column(String(64))
+    purpose: Mapped[str] = mapped_column(String(64))
+    model: Mapped[str] = mapped_column(String(64))
+    prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    completion_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    cache_hit: Mapped[bool] = mapped_column(Boolean, default=False)
+    request_hash: Mapped[str] = mapped_column(String(64))
+    run_id: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    execution_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    simulated: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class GatewayCache(Base):
+    """Record/replay store: identical requests are answered from here, so reruns are free and reproducible."""
+
+    __tablename__ = "gateway_cache"
+    request_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    model: Mapped[str] = mapped_column(String(64))
+    response: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class EvalSuite(Base):
+    __tablename__ = "eval_suites"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
+    target: Mapped[str] = mapped_column(String(32))  # coding_agent | risk_evaluator | sre_agent
+    description: Mapped[str] = mapped_column(Text, default="")
+    pass_threshold: Mapped[float] = mapped_column(Float, default=0.85)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class EvalDataset(Base):
+    """A versioned golden dataset (fixtures). Versions are immutable; changes create a new version."""
+
+    __tablename__ = "eval_datasets"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    suite_id: Mapped[str] = mapped_column(String(64), index=True)
+    version: Mapped[str] = mapped_column(String(16))
+    fixtures: Mapped[list] = mapped_column(JSON)
+    sha256: Mapped[str] = mapped_column(String(64))
+    notes: Mapped[str] = mapped_column(Text, default="")
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class EvalGrader(Base):
+    """A versioned grader specification: the grader is part of the experiment."""
+
+    __tablename__ = "eval_graders"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    suite_id: Mapped[str] = mapped_column(String(64), index=True)
+    version: Mapped[str] = mapped_column(String(16))
+    spec: Mapped[dict] = mapped_column(JSON)  # {"graders": [{"type": ..., "weight": ..., params}]}
+    sha256: Mapped[str] = mapped_column(String(64))
+    notes: Mapped[str] = mapped_column(Text, default="")
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AgentVersion(Base):
+    """A versioned agent configuration. Promotion to ACTIVE requires an eval gate plus human approval."""
+
+    __tablename__ = "agent_versions"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)  # e.g. coding-agent@1.1
+    target: Mapped[str] = mapped_column(String(32))
+    config: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(24))  # ACTIVE | CANDIDATE | PROMOTION_PENDING | RETIRED | REJECTED
+    description: Mapped[str] = mapped_column(Text, default="")
+    promotion: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class EvalRun(Base):
+    __tablename__ = "eval_runs"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    suite_id: Mapped[str] = mapped_column(String(64), index=True)
+    dataset_version: Mapped[str] = mapped_column(String(16))
+    grader_version: Mapped[str] = mapped_column(String(16))
+    agent_version: Mapped[str] = mapped_column(String(64))
+    mode: Mapped[str] = mapped_column(String(16))  # run | regrade
+    parent_run_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    status: Mapped[str] = mapped_column(String(24))  # PENDING|RUNNING|PAUSED|COMPLETED|BUDGET_EXCEEDED|FAILED
+    pause_requested: Mapped[bool] = mapped_column(Boolean, default=False)
+    budget_usd: Mapped[float] = mapped_column(Float)
+    spent_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    tokens: Mapped[int] = mapped_column(Integer, default=0)
+    summary: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class EvalCaseResult(Base):
+    __tablename__ = "eval_case_results"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    case_id: Mapped[str] = mapped_column(String(64))
+    output_key: Mapped[str] = mapped_column(String(64))  # sha256(fixture + agent version): reuse key
+    status: Mapped[str] = mapped_column(String(16))  # DONE | ERROR
+    attempts: Mapped[int] = mapped_column(Integer, default=1)
+    reused_from: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    output: Mapped[dict] = mapped_column(JSON, default=dict)
+    grades: Mapped[list] = mapped_column(JSON, default=list)
+    score: Mapped[float] = mapped_column(Float, default=0.0)
+    passed: Mapped[bool] = mapped_column(Boolean, default=False)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    tokens: Mapped[int] = mapped_column(Integer, default=0)
+    duration_ms: Mapped[int] = mapped_column(Integer, default=0)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

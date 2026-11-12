@@ -14,6 +14,9 @@ import Incidents from "./pages/Incidents";
 import IncidentDetail from "./pages/IncidentDetail";
 import Governance from "./pages/Governance";
 import Audit from "./pages/Audit";
+import Harness from "./pages/Harness";
+import HarnessRun from "./pages/HarnessRun";
+import HarnessCompare from "./pages/HarnessCompare";
 
 export default function App() {
   const [users, setUsers] = useState<Json[]>([]);
@@ -61,6 +64,8 @@ export default function App() {
             Policies & feedback {counts.pending_proposals > 0 && <span className="count">{counts.pending_proposals}</span>}
           </NavLink>
           <NavLink to="/audit">Audit trail</NavLink>
+          <div className="nav-section">Agent quality</div>
+          <NavLink to="/harness">Eval harness</NavLink>
         </nav>
       </aside>
       <div className="main">
@@ -93,6 +98,9 @@ export default function App() {
             <Route path="/incidents/:id" element={<IncidentDetail />} />
             <Route path="/governance" element={<Governance />} />
             <Route path="/audit" element={<Audit />} />
+            <Route path="/harness" element={<Harness />} />
+            <Route path="/harness/runs/:id" element={<HarnessRun />} />
+            <Route path="/harness/compare" element={<HarnessCompare />} />
           </Routes>
         </main>
       </div>

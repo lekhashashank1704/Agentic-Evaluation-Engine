@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import db
+from app.api.harness_routes import router as harness_router
 from app.api.routes import router
 from app.simulation.seed import seed
 
@@ -32,6 +33,7 @@ app = FastAPI(title="Agentic SDLC Governance & Evaluation Engine", version="1.0.
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(","),
                    allow_methods=["*"], allow_headers=["*"])
 app.include_router(router)
+app.include_router(harness_router)
 
 # Serve the built frontend (frontend/dist) when present, so one process runs the whole app.
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"

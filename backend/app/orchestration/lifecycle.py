@@ -12,17 +12,18 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.agents.base import ArtifactDraft, InMemoryRepository
-from app.agents.coding_agent import SimulatedCodingAgent, unified_diff
+from app.agents.coding_agent import unified_diff
 from app.agents.ops_agents import ReleaseAgent, SREAgent
 from app.core.common import artifact_hash, audit, next_id, notify
 from app.core.rbac import Actor, authorize, load_actor
 from app.evaluation.engine import EvaluationEngine
 from app.evaluation.support import ThresholdManager
+from app.harness.gateway import ModelGateway
+from app.harness.registry import active_coding_agent
 from app.models import Approval, Artifact, Deployment, Evaluation, Execution, Incident, Ticket
 from app.schemas import Decision, FeedbackItem, Severity, utcnow
 from app.services.policies import active_policy
 
-coding_agent = SimulatedCodingAgent()
 release_agent = ReleaseAgent()
 sre_agent = SREAgent()
 repository = InMemoryRepository()
@@ -65,7 +66,7 @@ def _ctx(exe: Execution, art: Artifact, author_kind: str = "agent") -> dict[str,
 
 
 def _store_artifact(db: Session, exe: Execution, draft: ArtifactDraft, version_no: int) -> Artifact:
-    agent = load_actor(db, coding_agent.agent_id)
+    agent = load_actor(db, "agent-coding")
     action = "generate_artifact" if version_no == 1 else "revise_artifact"
     authorize(db, agent, action, entity_type="execution", entity_id=exe.id)
     manifest = draft.manifest
@@ -77,6 +78,10 @@ def _store_artifact(db: Session, exe: Execution, draft: ArtifactDraft, version_n
     db.flush()
     exe.current_version = art.version
     repository.open_pull_request(exe.artifact_id, draft.pr["branch"], draft.pr["title"], draft.pr["description"])
+    ModelGateway(db, active_policy(db)).meter(
+        caller="production", agent=draft.usage.get("agent_version", agent.id), purpose=action,
+        model=draft.usage.get("model", "unknown"), prompt_tokens=draft.usage.get("prompt_tokens", 0),
+        completion_tokens=draft.usage.get("completion_tokens", 0), execution_id=exe.id)
     _audit_actor(db, agent, action, "artifact", f"{exe.artifact_id}@{art.version}", artifact_hash=sha,
                  details={"files": sorted(draft.files), "usage": draft.usage})
     _event(exe, "coding", f"{agent.name} produced {exe.artifact_id} {art.version} (sha256 {sha[:12]}...)", agent.id,
@@ -138,6 +143,8 @@ def run_development(db: Session, exe_id: str, actor: Actor, human_feedback: list
     state["run_iterations"] = 0
     exe.status, exe.stage = "IN_PROGRESS", "development"
     history = [db.get(Evaluation, eid).result for eid in state.get("quality_evaluations", [])]
+    coding_agent = active_coding_agent(db)  # the ACTIVE agent version (changed only via the promotion gate)
+    state["agent_version"] = coding_agent.version
 
     art = current_artifact(db, exe)
     if art is None:

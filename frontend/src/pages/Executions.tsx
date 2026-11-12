@@ -90,7 +90,7 @@ export default function Executions() {
                 <option value="low_risk">low_risk</option><option value="standard">standard</option><option value="critical_auth_payment">critical_auth_payment</option></select></label>
               <label className="field">Defect profile<select value={tpl.simulation.defect_profile} onChange={(e) => setSim("defect_profile", e.target.value)}>
                 {["realistic", "clean", "critical_secret", "stagnation", "regression", "protected_path"].map((p) => <option key={p}>{p}</option>)}</select></label>
-              <label className="field">Fixes per iteration<input type="number" min={0} max={8} value={tpl.simulation.fixes_per_iteration} onChange={(e) => setSim("fixes_per_iteration", Number(e.target.value))} /></label>
+              <label className="field">Fixes per iteration<input type="number" min={0} max={8} placeholder="active agent version" value={tpl.simulation.fixes_per_iteration ?? ""} onChange={(e) => setSim("fixes_per_iteration", e.target.value === "" ? null : Number(e.target.value))} /></label>
               <label className="field">Budget override (USD)<input type="number" step="0.01" value={tpl.simulation.budget_usd_override ?? ""} onChange={(e) => setSim("budget_usd_override", e.target.value === "" ? null : Number(e.target.value))} /></label>
             </div>
           </div>

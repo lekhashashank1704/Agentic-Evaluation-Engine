@@ -8,12 +8,16 @@ from sqlalchemy.orm import Session
 
 from app.core.common import audit
 from app.core.rbac import SEED_USERS
+from app.harness.registry import seed_agent_versions
+from app.harness.suites import seed_suites
 from app.models import Incident, Postmortem, User
 from app.schemas import utcnow
 from app.services.policies import active_policy
 
 
 def seed(db: Session) -> None:
+    seed_agent_versions(db)
+    seed_suites(db)
     if db.get(User, "user-alex") is not None:
         return
     for u in SEED_USERS:

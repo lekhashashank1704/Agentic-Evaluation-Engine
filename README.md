@@ -62,6 +62,10 @@ Demo scenarios (`POST /api/demo/{name}`):
 | `protected_path` | Agent edits a governance policy file → mandatory BLOCK |
 | `approval_invalidation` | Request changes → new artifact hash → old approval invalidated → re-evaluation → new approval |
 
+## Eval harness
+
+The **Eval harness** page evaluates the agents themselves, not one change: versioned golden datasets and graders, durable runs (per-case persistence, retries, pause/resume, budget caps, output reuse), re-grading stored outputs with a new grader, comparisons that split a score change into grader effect and agent effect, a shared model gateway that meters and replays every model call, and an eval-gated, human-approved promotion of agent versions. Click **Run harness walkthrough** (about 30 seconds), then approve `coding-agent@1.1` as Priya or Morgan. See [docs/EVAL_HARNESS.md](docs/EVAL_HARNESS.md).
+
 ## Repository layout
 
 ```
@@ -78,6 +82,8 @@ backend/
     orchestration/          lifecycle orchestrator (stages 1-9)
     services/               policy store, incidents, postmortems, feedback engine
     simulation/             code templates, sandbox (governance-owned tests), telemetry, scenarios
+    harness/                eval harness: suites, graders, targets, durable runner, model gateway,
+                            agent version registry and promotion gate
   tests/
 frontend/src/               React dashboard (pages/, components/)
 docs/                       architecture, evaluation framework, API
@@ -88,6 +94,7 @@ docs/                       architecture, evaluation framework, API
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): components, lifecycle flow, data model, security model, extension points, PostgreSQL migration
 - [docs/EVALUATION_FRAMEWORK.md](docs/EVALUATION_FRAMEWORK.md): every metric, formula, weight, threshold and decision rule
 - [docs/API.md](docs/API.md): REST endpoints
+- [docs/EVAL_HARNESS.md](docs/EVAL_HARNESS.md): datasets, graders, durable runs, re-grading and attribution, model gateway, promotion gate
 
 ## Limitations of this prototype
 
@@ -103,3 +110,5 @@ docs/                       architecture, evaluation framework, API
 | ![Overview](docs/screenshots/overview.png) | ![Iterations](docs/screenshots/exe-iter.png) |
 | ![Approval review](docs/screenshots/approval.png) | ![Health gate](docs/screenshots/dep.png) |
 | ![Risk breakdown](docs/screenshots/exe-risk.png) | ![Feedback engine](docs/screenshots/gov.png) |
+| ![Eval harness suites](docs/screenshots/harness-suites.png) | ![Run comparison](docs/screenshots/harness-compare.png) |
+| ![Eval run cases](docs/screenshots/harness-run.png) | ![Promotion gate](docs/screenshots/harness-promotion.png) |
