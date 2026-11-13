@@ -29,7 +29,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Agentic SDLC Governance & Evaluation Engine", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Agentic Evaluation Tool", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(","),
                    allow_methods=["*"], allow_headers=["*"])
 app.include_router(router)

@@ -1,4 +1,6 @@
-# Agentic SDLC Governance & Evaluation Engine
+# Agentic Evaluation Tool
+
+_Agentic SDLC governance and evaluation engine, with a unified eval harness for the agents themselves._
 
 A runnable, modular prototype of a central engine that **controls and independently evaluates autonomous agents across the software development lifecycle**: from engineering intent, through coding, iterative review and fix, a blast-radius Risk Gate, hash-bound human approval, canary release and a runtime Health Gate, to incident response, postmortems and a feedback loop that proposes (never silently applies) policy changes.
 
@@ -90,6 +92,8 @@ docs/                       architecture, evaluation framework, API
 ```
 
 ## Documentation
+
+- [handover/](handover/README.md): handover package, with the run-locally guide and the executive and technical reports (MD, DOCX, PDF)
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): components, lifecycle flow, data model, security model, extension points, PostgreSQL migration
 - [docs/EVALUATION_FRAMEWORK.md](docs/EVALUATION_FRAMEWORK.md): every metric, formula, weight, threshold and decision rule
