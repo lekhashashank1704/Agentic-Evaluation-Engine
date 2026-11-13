@@ -42,10 +42,10 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark">G</div>
+          <div className="brand-mark">A</div>
           <div>
-            <div style={{ fontWeight: 700 }}>Governance Engine</div>
-            <small>Agentic SDLC evaluation</small>
+            <div style={{ fontWeight: 700 }}>Agentic Evaluation Tool</div>
+            <small>SDLC governance &amp; evals</small>
           </div>
         </div>
         <nav className="nav">
